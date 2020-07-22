@@ -1,42 +1,29 @@
-local banco = "bcrp1"
-local tabelas = {
-	"vrp_users",
-	"vrp_user_identities",
-	"vrp_user_ids",
-	"vrp_user_moneys",
-	"vrp_user_vehicles",
-	"vrp_user_data",
-	"vrp_srv_data"
-}
-
-local estrutura_apenas = false
-
 AddEventHandler('onMySQLReady',function()
 	Citizen.CreateThreadNow(function()
-		Wait(500)
-		local currentDatetime = os.date("%Y%m%d%H%M%S")
-		local currentDatetime = ""
+		Wait(2000)
+		print("^4["..GetCurrentResourceName().."]: ^7Starting Database Dump to file: ^3"..Config.file_name)
 		local dados = nil
+		local erro = false
 		
-		local logFile,errorReason = io.open(banco..currentDatetime..".sql","w")
-		if not logFile then return print("["..GetCurrentResourceName().."]: "..errorReason) end
+		local logFile,errorReason = io.open(Config.file_name,"w")
+		if not logFile then return print("^8["..GetCurrentResourceName().."]: "..errorReason) end
 		
-		dados = MySQL.Sync.fetchAll("SHOW CREATE DATABASE `"..banco.."`;", {})
+		dados = MySQL.Sync.fetchAll("SHOW CREATE DATABASE `"..Config.database.."`;", {})
 		if dados then
 			dados[1]["Create Database"] = dados[1]["Create Database"]:gsub("CREATE DATABASE", "CREATE DATABASE IF NOT EXISTS")
 			logFile:write(dados[1]["Create Database"]..";\n\n")
-			logFile:write("USE `"..banco.."`;\n\n")
-			for k,v in pairs(tabelas) do
-				dados = MySQL.Sync.fetchAll("SHOW CREATE TABLE `"..banco.."`.`"..v.."`;", {})
+			logFile:write("USE `"..Config.database.."`;\n\n")
+			for k,v in pairs(Config.tables) do
+				dados = MySQL.Sync.fetchAll("SHOW CREATE TABLE `"..Config.database.."`.`"..v.."`;", {})
 				if dados then
 					dados[1]["Create Table"] = dados[1]["Create Table"]:gsub("CREATE TABLE", "CREATE TABLE IF NOT EXISTS")
 					logFile:write(dados[1]["Create Table"]..";\n\n")
 				
-					if not estrutura_apenas then
+					if not Config.structure_only then
 						local insert = ""
 						local linha = ""
 						local columns = {}
-						dados = MySQL.Sync.fetchAll("SELECT * FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA='"..banco.."' AND TABLE_NAME='"..v.."' ORDER BY ORDINAL_POSITION;", {})
+						dados = MySQL.Sync.fetchAll("SELECT * FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA='"..Config.database.."' AND TABLE_NAME='"..v.."' ORDER BY ORDINAL_POSITION;", {})
 						for i,j in pairs(dados) do
 							columns[i] = j['COLUMN_NAME']
 							if insert == "" then
@@ -65,13 +52,26 @@ AddEventHandler('onMySQLReady',function()
 						end
 						logFile:write(insert.."\n\n")
 					end
+					if Config.debug then
+						print("^4["..GetCurrentResourceName().."]: ^7Dumped table: ^3"..v)
+					end
 				else
-					print("["..GetCurrentResourceName().."]: Invalid table: `"..banco.."`.`"..v.."`")
+					print("^4["..GetCurrentResourceName().."]: ^8Invalid table: `"..Config.database.."`.`"..v.."`")
+					erro = true
 				end
 			end
 		else
-			print("["..GetCurrentResourceName().."]: Invalid database: `"..banco.."`")
+			print("^4["..GetCurrentResourceName().."]: ^8Invalid database: `"..Config.database.."`")
+			erro = true
 		end
+		
+		print("^4["..GetCurrentResourceName().."]: ^7Finishing Database Dump")
+		if erro then
+			print("^4["..GetCurrentResourceName().."]: ^8Failed!^7")
+		else
+			print("^4["..GetCurrentResourceName().."]: ^2Success!^7")
+		end
+		
 		logFile:close()
 	end)
 end)
@@ -94,6 +94,8 @@ function trataTipo(node)
 	end
 end
 
+
+-- Debug functions
 function sprint(sql)
 	print("\n")
 	print(sql)
