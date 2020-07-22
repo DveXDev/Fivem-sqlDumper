@@ -1,12 +1,12 @@
-AddEventHandler('onMySQLReady',function()
+MySQL.ready(function ()
 	Citizen.CreateThreadNow(function()
 		Wait(2000)
-		print("^4["..GetCurrentResourceName().."]: ^7Starting Database Dump to file: ^3"..Config.file_name)
+		print("^4["..GetCurrentResourceName().."]: ^7Starting Database Dump to file: ^3"..Config.file_name.."^7")
 		local dados = nil
 		local erro = false
 		
 		local logFile,errorReason = io.open(Config.file_name,"w")
-		if not logFile then return print("^8["..GetCurrentResourceName().."]: "..errorReason) end
+		if not logFile then return print("^8["..GetCurrentResourceName().."]: "..errorReason.."^7") end
 		
 		dados = MySQL.Sync.fetchAll("SHOW CREATE DATABASE `"..Config.database.."`;", {})
 		if dados then
@@ -53,15 +53,15 @@ AddEventHandler('onMySQLReady',function()
 						logFile:write(insert.."\n\n")
 					end
 					if Config.debug then
-						print("^4["..GetCurrentResourceName().."]: ^7Dumped table: ^3"..v)
+						print("^4["..GetCurrentResourceName().."]: ^7Dumped table: ^3"..v.."^7")
 					end
 				else
-					print("^4["..GetCurrentResourceName().."]: ^8Invalid table: `"..Config.database.."`.`"..v.."`")
+					print("^4["..GetCurrentResourceName().."]: ^8Invalid table: `"..Config.database.."`.`"..v.."`^7")
 					erro = true
 				end
 			end
 		else
-			print("^4["..GetCurrentResourceName().."]: ^8Invalid database: `"..Config.database.."`")
+			print("^4["..GetCurrentResourceName().."]: ^8Invalid database: `"..Config.database.."`^7")
 			erro = true
 		end
 		
