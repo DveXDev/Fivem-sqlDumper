@@ -1,4 +1,4 @@
-[Discord link for more scripts](https://discord.gg/U5YDgbh)
+# [Discord link for more scripts](https://discord.gg/U5YDgbh)
 
 # Fivem SQL Dumper
 
