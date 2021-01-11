@@ -1,3 +1,5 @@
+[Discord link for more scripts](https://discord.gg/U5YDgbh)
+
 # Fivem SQL Dumper
 
 It’s a code to dump/backup your database into a .sql file automatically.
